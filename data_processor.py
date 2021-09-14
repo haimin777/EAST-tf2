@@ -20,7 +20,7 @@ import tensorflow as tf
 def get_images(data_path):
   files = []
   idx = 0
-  for ext in ['jpg', 'png', 'jpeg', 'JPG']:
+  for ext in ['jpg', 'png', 'jpeg', 'JPG', 'webp']:
     files.extend(glob.glob(
       os.path.join(data_path, '*.{}'.format(ext))))
     idx += 1
@@ -38,14 +38,24 @@ def load_annotation(p):
   if not os.path.exists(p):
     return np.array(text_polys, dtype=np.float32)
   with open(p, 'r') as f:
-    reader = csv.reader(f)
-    for line in reader:
+    #reader = csv.reader(f)
+    reader = f.read()
+
+    #for line in reader:
+    for line in reader.split('\n')[:-1]:
+   
       label = line[-1]
       # strip BOM. \ufeff for python3,  \xef\xbb\bf for python2
-      line = [i.strip('\ufeff').strip('\xef\xbb\xbf') for i in line]
+      #line = [i.strip('\ufeff').strip('\xef\xbb\xbf') for i in line] # for ICDAR
+      #print(line)
+      line = line.split(' ')
+      
+      #x1, y1, x2, y2, x3, y3, x4, y4 = list(map(float, line[:8]))# fro ICDAR
+      x1, y1, x2, y2 = list(map(float, line[:8])) #for poker data
+      #print(x1, y1)
+      #text_polys.append([[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
+      text_polys.append([[x1, y1], [x2, y1], [x2, y2], [x1, y2]])
 
-      x1, y1, x2, y2, x3, y3, x4, y4 = list(map(float, line[:8]))
-      text_polys.append([[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
       if label == '*' or label == '###':
         text_tags.append(True)
       else:
